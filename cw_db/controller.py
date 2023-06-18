@@ -1,29 +1,20 @@
-from sqlalchemy import create_engine, String
-from sqlalchemy.orm import Session, DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import create_engine, Engine
+from sqlalchemy.orm import Session
+from model import Base, Address, Courier, Customer, Item, Order, Order_has_Item, Schedule, User
 
 
-class Base(DeclarativeBase):
-    pass
+def connect_to_db():
+    db_engine = create_engine(
+        "mysql+pymysql://root:0000@localhost/DB?charset=utf8mb4", echo=False, future=True)
+    Base.metadata.create_all(db_engine)
+    return db_engine
 
 
-class User(Base):
-    __tablename__ = "user"
-
-    id: Mapped[int] = mapped_column(
-        primary_key=True, autoincrement="auto", unique=True, nullable=False, index=True)
-    login: Mapped[str] = mapped_column(String, nullable=False)
-    password: Mapped[str] = mapped_column(String, nullable=False)
-    access_level: Mapped[str] = mapped_column(String, nullable=False)
-
-    def __repr__(self) -> str:
-        return f"id={self.id}, login={self.login}, password={self.password}, access_level={self.access_level}"
-
-
-db_engine = create_engine(
-    "mysql+pymysql://root:0000@localhost/mydb?charset=utf8mb4", echo=False)
-Base.metadata.create_all(db_engine)
-
-with Session(bind=db_engine, autoflush=False) as db_session:
-    users = db_session.query(User).filter(User.access_level=="full")
-    for u in users:
-        print(f"\nhash_password={u.password}\n")
+def make_session(db_engine: Engine):
+    with Session(bind=db_engine, autoflush=False) as db_session:
+        order_has_item = db_session.query(User).all()
+        for o in order_has_item:
+            print(o)
+        # users = db_session.query(User).filter(User.access_level == "full")
+        # for u in users:
+        #     print(f"\nhash_password={u.password}\n")
