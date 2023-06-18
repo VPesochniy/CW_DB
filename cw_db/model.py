@@ -82,7 +82,6 @@ class Item(Base):
     price: Mapped[float] = mapped_column(Float, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[Optional[str]]
-    # description: Mapped[Optional[str]] = mapped_column(String)
 
     def __repr__(self) -> str:
         return f"""id={self.id!r},
@@ -100,12 +99,10 @@ class Order(Base):
 
     date_of_creation: Mapped[DateTime] = mapped_column(
         DateTime, nullable=False)
-    # date_of_completion: Mapped[Optional[DateTime]]
     date_of_completion: Mapped[Optional[DateTime]] = mapped_column(DateTime)
     cost: Mapped[float] = mapped_column(Float, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
     discount: Mapped[Optional[float]]
-    # discount: Mapped[Optional[float]] = mapped_column(Float)
     courier_id: Mapped[int] = mapped_column(ForeignKey("courier.id"))
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
     items_quantity: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -114,7 +111,6 @@ class Order(Base):
     customer: Mapped["Customer"] = relationship(back_populates="order")
 
     def __repr__(self) -> str:
-        # if self.date_of_completion != None:
         return f"""id={self.id!r}, 
         date_of_creation={datetime.strftime(self.date_of_creation, config.DATETIME_FORMAT)!r}, 
         date_of_completion={datetime.strftime(self.date_of_completion, config.DATETIME_FORMAT) if self.date_of_completion != None else None!r}, 
@@ -132,17 +128,6 @@ Order_has_Item = Table(
     Column("order_id", ForeignKey("order.id"), primary_key=True),
     Column("item_id", ForeignKey("item.id"), primary_key=True),
 )
-
-# class Order_has_Item(Base):
-#     __tablename__ = "order_has_item"
-
-#     order_id: Mapped[int] = mapped_column(ForeignKey("order.id"))
-#     order_courier_id: Mapped[int] = mapped_column(ForeignKey("order.courier_id"))
-#     order_customer_id: Mapped[int] = mapped_column(ForeignKey("order.customer_id"))
-#     item_id: Mapped[int] = mapped_column(ForeignKey("item.id"))
-
-#     def __repr__(self) -> str:
-#         return f"oder_id={self.order_id}, order_courier_id={self.order_courier_id}, order_customer_id={self.order_customer_id}, item_id={self.item_id}"
 
 
 class Schedule(Base):
@@ -174,7 +159,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement="auto", unique=True, nullable=False, index=True)
-    
+
     login: Mapped[str] = mapped_column(String, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
     access_level: Mapped[str] = mapped_column(String, nullable=False)
