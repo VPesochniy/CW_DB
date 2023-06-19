@@ -27,6 +27,11 @@ class Address(Base):
         address={self.address!r},
         customer_id={self.customer_id!r}\n"""
 
+    def __init__(self, input_name: str, input_address: str, input_customer_id: int):
+        self.name = input_name
+        self.address = input_address
+        self.customer_id = input_customer_id
+
 
 class Courier(Base):
     __tablename__ = "courier"
@@ -51,6 +56,12 @@ class Courier(Base):
         full_name={self.full_name!r},
         status={self.status!r}\n"""
 
+    def __init__(self, input_login, input_password: str, input_full_name: str, input_status: str):
+        self.login = input_login
+        self.password = input_password
+        self. full_name = input_full_name
+        self.status = input_status
+
 
 class Customer(Base):
     __tablename__ = "customer"
@@ -71,6 +82,10 @@ class Customer(Base):
         full_name={self.full_name!r},
         phone_number={self.phone_number!r}\n"""
 
+    def __init__(self, input_full_name: str, input_phone_number: str):
+        self.full_name = input_full_name
+        self.phone_number = input_phone_number
+
 
 class Item(Base):
     __tablename__ = "item"
@@ -90,6 +105,12 @@ class Item(Base):
         quantity={self.quantity!r},
         description={self.description!r}\n"""
 
+    def __init__(self, input_name: str, input_price: float, input_quantity: int, input_description: Optional[str]):
+        self.name = input_name
+        self.price = input_price
+        self.quantity = input_quantity
+        self.description = input_description
+
 
 class Order(Base):
     __tablename__ = "order"
@@ -100,12 +121,12 @@ class Order(Base):
     date_of_creation: Mapped[DateTime] = mapped_column(
         DateTime, nullable=False)
     date_of_completion: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    items_quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    discount: Mapped[Optional[float]]
     cost: Mapped[float] = mapped_column(Float, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
-    discount: Mapped[Optional[float]]
-    courier_id: Mapped[int] = mapped_column(ForeignKey("courier.id"))
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
-    items_quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    courier_id: Mapped[int] = mapped_column(ForeignKey("courier.id"))
 
     courier: Mapped["Courier"] = relationship(back_populates="order")
     customer: Mapped["Customer"] = relationship(back_populates="order")
@@ -114,12 +135,22 @@ class Order(Base):
         return f"""id={self.id!r}, 
         date_of_creation={datetime.strftime(self.date_of_creation, config.DATETIME_FORMAT)!r}, 
         date_of_completion={datetime.strftime(self.date_of_completion, config.DATETIME_FORMAT) if self.date_of_completion != None else None!r}, 
-        cost={self.cost!r},
+        quantity={self.items_quantity!r},
         discount={self.discount!r},
+        cost={self.cost!r},
         status={self.status!r},
-        customer_id={self.customer_id!r},
         courier_id={self.courier_id!r},
-        quantity={self.items_quantity!r}\n"""
+        customer_id={self.customer_id!r}\n"""
+
+    def __init__(self, input_date_of_creation: datetime, input_date_of_completion: Optional[datetime], input_items_quantity: int, input_discount: Optional[float], input_cost: float, input_status: str, input_courier_id: int, input_customer_id: int):
+        self.date_of_creation = input_date_of_creation
+        self.date_of_completion = input_date_of_completion
+        self.items_quantity = input_items_quantity
+        self.discount = input_discount
+        self.cost = input_cost
+        self.status = input_status
+        self.courier_id = input_courier_id
+        self.customer_id = input_customer_id
 
 
 Order_has_Item = Table(
@@ -153,6 +184,13 @@ class Schedule(Base):
         description={self.description!r},
         courier_id={self.courier_id!r}\n"""
 
+    def __init__(self, input_start_of_shift: time, input_end_of_shift: Optional[time], input_date: date, input_description: Optional[str], input_courier_id: int):
+        self.start_of_shift = input_start_of_shift
+        self.end_of_shift = input_end_of_shift
+        self.date = input_date
+        self.description = input_description
+        self.courier_id = input_courier_id
+
 
 class User(Base):
     __tablename__ = "user"
@@ -170,3 +208,7 @@ class User(Base):
         password={self.password!r},
         access_level={self.access_level!r}\n"""
 
+    def __init__(self, input_login: str, input_password: str, input_access_level: str):
+        self.login = input_login
+        self.password = input_password
+        self.access_level = input_access_level

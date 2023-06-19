@@ -1,3 +1,6 @@
 cw_db/__pycache__
 .venv
 .vscode
+test.py
+tests
+setenv.sh
