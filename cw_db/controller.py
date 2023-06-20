@@ -4,6 +4,9 @@ import model
 import config
 import datetime
 import hashlib
+import gui.login_window
+import gui.main_window
+import typing
 
 
 def connect_to_db():
@@ -156,21 +159,24 @@ def read_from_table(db_session: orm.Session, choice: model.Base):
         print(o)
     input()
 
+def get_from_table(db_session: orm.Session, choice: model.Base) -> typing.List[model.Base]:
+    return db_session.query(choice).all()
 
 def verify_user(db_session: orm.Session, input_login: str, input_password: str):
     user = get_user_from_db(db_session, input_login)
-
     password_to_verify = hashlib.sha256(input_password.encode("UTF-8"))
-    if password_to_verify.hexdigest() == user.password and user.access_level == config.Access_level.FULL.value:
-        print("SUCCESS!")
-    else:
-        print("!")
-    print("password_to_verify:")
-    print(password_to_verify.hexdigest())
-    print(user.password)
-    print("password_to_verify with encode")
-    print(input_password)
-    print(input_password.encode("UTF-8"))
+    if password_to_verify.hexdigest() == user.password:
+        match user.access_level:
+            case config.Access.FULL.value:
+                print("FULL ACCESS")
+                gui.login_window.root.destroy()
+                gui.main_window.run_app(db_session)
+            case config.Access.ADMIN.value:
+                print("ADMIN ACCESS")
+            case config.Access.MODERATOR.value:
+                print("MODERATOR ACCESS")
+            case config.Access.VIEWER.value:
+                print("VIEWER ACCESS")
 
 
 def get_user_from_db(db_session: orm.Session, input_login: str) -> model.Base:

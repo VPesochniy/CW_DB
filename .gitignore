@@ -1,4 +1,5 @@
 cw_db/__pycache__
+gui/__pycache__
 .venv
 .vscode
 test.py
