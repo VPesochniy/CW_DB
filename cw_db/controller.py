@@ -1,25 +1,22 @@
-import inspect
-from sqlalchemy import create_engine, Engine, insert
-import sqlalchemy.orm as so
+import sqlalchemy as db
+import sqlalchemy.orm as orm
 import model
 import config
-import typing
 import datetime
 
 
 def connect_to_db():
-    db_engine = create_engine(
+    db_engine = db.create_engine(
         config.DB_TOKEN, echo=False, future=True)
     model.Base.metadata.create_all(db_engine)
     return db_engine
 
 
-def make_session(db_engine: Engine):
-    with so.Session(bind=db_engine, autoflush=False) as db_session:
+def make_session(db_engine: db.Engine):
+    with orm.Session(bind=db_engine, autoflush=False) as db_session:
 
         while True:
             table_name = dict()
-            choice: model.Base
             for number, value in enumerate(model.Base.metadata.tables.keys(), 1):
                 table_name[number] = value
                 print(number, ". ", str(table_name[number]).upper(), sep="")
@@ -51,14 +48,18 @@ def make_session(db_engine: Engine):
             user_input = input("\nINPUT: ")
             match user_input:
                 case config.Menu.CREATE.value:
-                    create_entry_in_table(db_session, choice)
+                    obj = create_entry_in_table(db_session, choice)
+                    db_session.add(obj)
+                    db_session.commit()
                 case config.Menu.READ.value:
                     read_from_table(db_session, choice)
                 case config.Menu.UPDATE.value:
-                    print("\nUPDATE\n")
-                    pass
+                    update_entry_from_table(db_session, choice)
+                    db_session.commit()
                 case config.Menu.DELETE.value:
-                    delete_entry_from_table(db_session, choice)
+                    obj = delete_entry_from_table(db_session, choice)
+                    db_session.delete(obj)
+                    db_session.commit()
                 case config.Menu.EXIT.value:
                     exit(0)
                 case _:
@@ -66,17 +67,34 @@ def make_session(db_engine: Engine):
                     input()
 
 
-def delete_entry_from_table(db_session: so.Session, choice: model.Base):
+def update_entry_from_table(db_session: orm.Session, choice: model.Base):
+
+    read_from_table(db_session, choice)
+    print("\nUPDATE\n")
+    user_input = input("ENTRY ID TO UPDATE: ")
+    object_to_update = db_session.query(
+        choice).filter(choice.id == user_input).first()
+    modified_object = create_entry_in_table(db_session, choice)
+    modified_object.id = object_to_update.id
+    db_session.delete(object_to_update)
+    db_session.add(modified_object)
+    # print(type(choice))
+    # print(type(object_to_update))
+    # print(type(model.Customer))
+    # print(object_to_update == model.Customer)
+    # return object_to_update
+
+
+def delete_entry_from_table(db_session: orm.Session, choice: model.Base) -> model.Base:
     read_from_table(db_session, choice)
     print("\nDELETE\n")
     user_input = input("ENTRY ID TO DELETE: ")
     object_to_delete = db_session.query(
         choice).filter(choice.id == user_input).first()
-    db_session.delete(object_to_delete)
-    db_session.commit()
+    return object_to_delete
 
 
-def create_entry_in_table(db_session: so.Session, choice: model.Base):
+def create_entry_in_table(db_session: orm.Session, choice: model.Base) -> model.Base:
     print("\nCREATE\n")
     # TODO: использовать один класс, вместо нескольких input; сделать проверку ввода и убрать комментарии
     match choice:
@@ -84,25 +102,27 @@ def create_entry_in_table(db_session: so.Session, choice: model.Base):
             input_name = input("INPUT_NAME: ")
             input_address = input("INPUT_ADDRESS:")
             input_customer_id = input("INPUT_CUSTOMER_ID: ")
-            obj = model.Address(input_name, input_address, input_customer_id)
+            created_object = model.Address(
+                input_name, input_address, input_customer_id)
         case model.Courier:
             input_login = input("INPUT_LOGIN: ")
             input_password = input("INPUT_PASSWORD: ")
             input_full_name = input("INPUT_FULL_NAME: ")
             input_status = input("INPUT_STATUS: ")
-            obj = model.Courier(input_login, input_password,
-                                input_full_name, input_status)
+            created_object = model.Courier(input_login, input_password,
+                                           input_full_name, input_status)
         case model.Customer:
             input_full_name = input("INPUT_FULL_NAME: ")
             input_phone_number = input("INPUT_PHONE_NUMBER: ")
-            obj = model.Customer(input_full_name, input_phone_number)
+            created_object = model.Customer(
+                input_full_name, input_phone_number)
         case model.Item:
             input_name = input("INPUT_NAME: ")
             input_price = input("INPUT_PRICE: ")
             input_quantity = input("INPUT_QUANTITY: ")
             input_description = input("INPUT_DESCRIPTION: ")
-            obj = model.Item(input_name, input_price,
-                             input_quantity, input_description)
+            created_object = model.Item(input_name, input_price,
+                                        input_quantity, input_description)
         case model.Order:
             # input_date_of_creation = input("INPUT_DATE_OF_CREATION: ")
             # input_date_of_completion = input("INPUT_DATE_OF_COMPLETION: ")
@@ -112,27 +132,27 @@ def create_entry_in_table(db_session: so.Session, choice: model.Base):
             input_status = input("INPUT_STATUS: ")
             input_courier_id = input("INPUT_COURIER_ID: ")
             input_customer_id = input("INPUT_CUSTOMER_ID: ")
-            obj = model.Order(datetime.datetime.now(), None, input_items_quantity,
-                              input_discount, input_cost, input_status, input_courier_id, input_customer_id)
+            created_object = model.Order(datetime.datetime.now(), None, input_items_quantity,
+                                         input_discount, input_cost, input_status, input_courier_id, input_customer_id)
         case model.Schedule:
             # input_start_of_shift = input("INPUT_START_OF_SHIFT: ")
             # input_end_of_shift = input("INPUT_END_OF_SHIFT: ")
             # input_date = input("INPUT_DATE: ")
             input_description = input("INPUT_DESCRIPTION: ")
             input_courier_id = input("INPUT_COURIER_ID: ")
-            obj = model.Schedule(datetime.datetime.strftime(datetime.datetime.now(), config.TIME_FORMAT), None, datetime.datetime.strftime(
+            created_object = model.Schedule(datetime.datetime.strftime(datetime.datetime.now(), config.TIME_FORMAT), None, datetime.datetime.strftime(
                 datetime.datetime.now(), config.DATE_FORMAT), input_description, input_courier_id)
         case model.User:
             input_login = input("INPUT_LOGIN: ")
             input_password = input("INPUT_PASSWORD: ")
             input_access_level = input("INPUT_ACCESS_LEVEL: ")
-            obj = model.User(input_login, input_password, input_access_level)
-    db_session.add(obj)
-    db_session.commit()
+            created_object = model.User(
+                input_login, input_password, input_access_level)
     input()
+    return created_object
 
 
-def read_from_table(db_session: so.Session, choice: model.Base):
+def read_from_table(db_session: orm.Session, choice: model.Base):
     print("\nREAD\n")
     objects = db_session.query(choice).all()
     for o in objects:
