@@ -4,3 +4,4 @@ cw_db/__pycache__
 test.py
 tests
 setenv.sh
+cw_db/crud
