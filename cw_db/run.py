@@ -1,5 +1,7 @@
-from controller import connect_to_db, make_session
+import controller
+import view
 
 if __name__ == "__main__":
-    db_engine = connect_to_db()
-    make_session(db_engine)
+    db_engine = controller.connect_to_db()
+    db_session = controller.create_db_session(db_engine)
+    view.run_app(db_session)
