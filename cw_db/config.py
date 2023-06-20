@@ -25,7 +25,7 @@ class Table(Enum):
     SCHEDULE = "7"
     USER = "8"
 
-class Access_level(Enum):
+class Access(Enum):
     FULL = "full"
     ADMIN = "admin"
     MODERATOR = "moderator"
