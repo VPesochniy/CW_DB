@@ -23,6 +23,7 @@ def make_session(db_engine: Engine):
             for number, value in enumerate(model.Base.metadata.tables.keys(), 1):
                 table_name[number] = value
                 print(number, ". ", str(table_name[number]).upper(), sep="")
+            print(config.Menu.EXIT.value, ". ", config.Menu.EXIT.name, sep="")
             user_input = input("\nINPUT: ")
             match user_input:
                 case config.Tables.ADDRESS.value:
@@ -39,6 +40,8 @@ def make_session(db_engine: Engine):
                     choice = model.Schedule
                 case config.Tables.USER.value:
                     choice = model.User
+                case config.Menu.EXIT.value:
+                    exit(0)
                 case _:
                     print("Некорректный ввод. Попробуйте снова")
                     input()
@@ -49,20 +52,28 @@ def make_session(db_engine: Engine):
             match user_input:
                 case config.Menu.CREATE.value:
                     create_entry_in_table(db_session, choice)
-
                 case config.Menu.READ.value:
                     read_from_table(db_session, choice)
                 case config.Menu.UPDATE.value:
                     print("\nUPDATE\n")
                     pass
                 case config.Menu.DELETE.value:
-                    print("\nDELETE\n")
-                    pass
+                    delete_entry_from_table(db_session, choice)
                 case config.Menu.EXIT.value:
                     exit(0)
                 case _:
                     print("Некорректный ввод. Попробуйте снова")
                     input()
+
+
+def delete_entry_from_table(db_session: so.Session, choice: model.Base):
+    read_from_table(db_session, choice)
+    print("\nDELETE\n")
+    user_input = input("ENTRY ID TO DELETE: ")
+    object_to_delete = db_session.query(
+        choice).filter(choice.id == user_input).first()
+    db_session.delete(object_to_delete)
+    db_session.commit()
 
 
 def create_entry_in_table(db_session: so.Session, choice: model.Base):
