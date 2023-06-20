@@ -3,6 +3,7 @@ import sqlalchemy.orm as orm
 import model
 import config
 import datetime
+import hashlib
 
 
 def connect_to_db():
@@ -12,7 +13,7 @@ def connect_to_db():
     return db_engine
 
 
-def make_session(db_engine: db.Engine):
+def create_db_session(db_engine: db.Engine) -> orm.Session:
     with orm.Session(bind=db_engine, autoflush=False) as db_session:
 
         while True:
@@ -23,22 +24,22 @@ def make_session(db_engine: db.Engine):
             print(config.Menu.EXIT.value, ". ", config.Menu.EXIT.name, sep="")
             user_input = input("\nINPUT: ")
             match user_input:
-                case config.Tables.ADDRESS.value:
+                case config.Table.ADDRESS.value:
                     choice = model.Address
-                case config.Tables.COURIER.value:
+                case config.Table.COURIER.value:
                     choice = model.Courier
-                case config.Tables.CUSTOMER.value:
+                case config.Table.CUSTOMER.value:
                     choice = model.Customer
-                case config.Tables.ITEM.value:
+                case config.Table.ITEM.value:
                     choice = model.Item
-                case config.Tables.ORDER.value:
+                case config.Table.ORDER.value:
                     choice = model.Order
-                case config.Tables.SCHEDULE.value:
+                case config.Table.SCHEDULE.value:
                     choice = model.Schedule
-                case config.Tables.USER.value:
+                case config.Table.USER.value:
                     choice = model.User
                 case config.Menu.EXIT.value:
-                    exit(0)
+                    return db_session
                 case _:
                     print("Некорректный ввод. Попробуйте снова")
                     input()
@@ -61,7 +62,7 @@ def make_session(db_engine: db.Engine):
                     db_session.delete(obj)
                     db_session.commit()
                 case config.Menu.EXIT.value:
-                    exit(0)
+                    return db_session
                 case _:
                     print("Некорректный ввод. Попробуйте снова")
                     input()
@@ -78,11 +79,6 @@ def update_entry_from_table(db_session: orm.Session, choice: model.Base):
     modified_object.id = object_to_update.id
     db_session.delete(object_to_update)
     db_session.add(modified_object)
-    # print(type(choice))
-    # print(type(object_to_update))
-    # print(type(model.Customer))
-    # print(object_to_update == model.Customer)
-    # return object_to_update
 
 
 def delete_entry_from_table(db_session: orm.Session, choice: model.Base) -> model.Base:
@@ -145,9 +141,10 @@ def create_entry_in_table(db_session: orm.Session, choice: model.Base) -> model.
         case model.User:
             input_login = input("INPUT_LOGIN: ")
             input_password = input("INPUT_PASSWORD: ")
+            hashed_password = hashlib.sha256(input_password.encode("UTF-8"))
             input_access_level = input("INPUT_ACCESS_LEVEL: ")
             created_object = model.User(
-                input_login, input_password, input_access_level)
+                input_login, hashed_password.hexdigest(), input_access_level)
     input()
     return created_object
 
@@ -158,3 +155,23 @@ def read_from_table(db_session: orm.Session, choice: model.Base):
     for o in objects:
         print(o)
     input()
+
+
+def verify_user(db_session: orm.Session, input_login: str, input_password: str):
+    user = get_user_from_db(db_session, input_login)
+
+    password_to_verify = hashlib.sha256(input_password.encode("UTF-8"))
+    if password_to_verify.hexdigest() == user.password and user.access_level == config.Access_level.FULL.value:
+        print("SUCCESS!")
+    else:
+        print("!")
+    print("password_to_verify:")
+    print(password_to_verify.hexdigest())
+    print(user.password)
+    print("password_to_verify with encode")
+    print(input_password)
+    print(input_password.encode("UTF-8"))
+
+
+def get_user_from_db(db_session: orm.Session, input_login: str) -> model.Base:
+    return db_session.query(model.User).filter(model.User.login == input_login).first()

@@ -16,7 +16,7 @@ class Menu(Enum):
     EXIT = "q"
 
 
-class Tables(Enum):
+class Table(Enum):
     ADDRESS = "1"
     COURIER = "2"
     CUSTOMER = "3"
@@ -24,3 +24,9 @@ class Tables(Enum):
     ORDER = "5"
     SCHEDULE = "7"
     USER = "8"
+
+class Access_level(Enum):
+    FULL = "full"
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    VIEWER = "viewer"
