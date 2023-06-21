@@ -1,8 +1,9 @@
 cw_db/__pycache__
-gui/__pycache__
+cw_db/gui/__pycache__
+cw_db/crud/__pycache__
 .venv
 .vscode
 test.py
 tests
 setenv.sh
-cw_db/crud
+database.png
