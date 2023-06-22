@@ -14,7 +14,9 @@ import crud.update
 import crud.delete
 
 import csv
-from tkinter import filedialog
+from tkinter import filedialog, ttk
+import tkinter.messagebox as msg
+
 
 def connect_to_db():
     db_engine = db.create_engine(
@@ -78,9 +80,8 @@ def create_db_session(db_engine: db.Engine) -> orm.Session:
                     print("Некорректный ввод. Попробуйте снова")
                     input()
 
-
-def get_object_from_table(db_session: orm.Session, choice: model.Base) -> typing.List[model.Base]:
-    return db_session.query(choice).all()
+# def get_object_from_table(db_session: orm.Session, choice: model.Base, input_id: int) -> model.Base:
+#     return db_session.query(choice).filter(choice.id == input_id).first()
 
 
 def verify_user(db_session: orm.Session, input_login: str, input_password: str):
@@ -105,14 +106,19 @@ def _get_user_from_db(db_session: orm.Session, input_login: str) -> model.Base:
 
 
 def export_table_in_csv(db_session: orm.Session, choice: model.Base):
-        file_path = _open_file_explorer()
-        print(file_path)
-        # found_name = _find_name_in_choice(choice)
-        file_to_write = open(f"{file_path}.csv", "w")
+    file_path = _open_file_explorer()
+    if file_path:
+        file_to_write = open(f"{file_path}", "w")
+
         csv_writer = csv.writer(file_to_write)
         records = db_session.query(choice).all()
         for row in records:
-            csv_writer.writerow([getattr(row, column.name) for column in choice.__mapper__.columns])
+            csv_writer.writerow([getattr(row, column.name)
+                                for column in choice.__mapper__.columns])
+        file_to_write.close()
+    # else:
+    #     found_name = _find_name_in_choice(choice)
+    #     file_to_write = open(f"{found_name}.csv", "w")
 
 
 def _find_name_in_choice(choice: model.Base) -> str:
@@ -123,5 +129,11 @@ def _find_name_in_choice(choice: model.Base) -> str:
 
 
 def _open_file_explorer() -> str:
-    return filedialog.asksaveasfilename()
-    
+    return filedialog.asksaveasfilename(defaultextension=".csv")
+
+
+def get_selected_object_from_table(table: ttk.Treeview) -> int:
+    for selected_object in table.selection():
+        object_to_read = table.item(selected_object)
+        table_id, *_ = object_to_read["values"]
+    return table_id

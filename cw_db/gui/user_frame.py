@@ -4,6 +4,7 @@ import model
 import sqlalchemy.orm as orm
 import controller
 
+import crud.read
 
 def create_user_frame(db_session: orm.Session, notebook: ttk.Notebook):
     user_frame = ttk.Frame(master=notebook)
@@ -14,6 +15,7 @@ def create_user_frame(db_session: orm.Session, notebook: ttk.Notebook):
 
     user_columns = ("id", "login", "password", "access_level")
 
+    global user_table
     user_table = ttk.Treeview(columns=user_columns,
                               show="headings", master=user_frame)
 
@@ -34,10 +36,19 @@ def create_user_frame(db_session: orm.Session, notebook: ttk.Notebook):
     user_table_scrollbar.grid(row=0, column=1, sticky=tk.NS)
     user_table.configure(yscrollcommand=user_table_scrollbar.set)
 
-    user_to_append = controller.get_object_from_table(db_session, model.User)
+    read_user_table(db_session)
+
+
+    user_table.bind("<<TreeviewSelect>>", lambda event: controller.get_selected_object_from_table(user_table))
+
+def read_user_table(db_session):
+    user_to_append = crud.read.get_all_records_from_table(db_session, model.User)
+
+
+    for i in user_table.get_children():
+        user_table.delete(i)
 
     user_list = list()
-    # # добавляем данные
     for u in user_to_append:
         user_list.append((u.id, u.login, u.password, u.access_level))
     for u in user_list:

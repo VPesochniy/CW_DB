@@ -3,6 +3,8 @@ from tkinter import ttk
 import model
 import sqlalchemy.orm as orm
 import controller
+import crud.read
+
 
 
 def create_schedule_frame(db_session: orm.Session, notebook: ttk.Notebook):
@@ -15,6 +17,7 @@ def create_schedule_frame(db_session: orm.Session, notebook: ttk.Notebook):
     schedule_columns = ("id", "date", "description", "start_of_shift", "end_of_shift",
                         "courier_id")
 
+    global schedule_table
     schedule_table = ttk.Treeview(
         columns=schedule_columns, show="headings", master=schedule_frame)
 
@@ -40,8 +43,17 @@ def create_schedule_frame(db_session: orm.Session, notebook: ttk.Notebook):
     schedule_table_scrollbar.grid(row=0, column=1, sticky=tk.NS)
     schedule_table.configure(yscrollcommand=schedule_table_scrollbar.set)
 
-    schedule_to_append = controller.get_object_from_table(
+    read_schedule_table(db_session)
+
+    schedule_table.bind("<<TreeviewSelect>>", lambda event: controller.get_selected_object_from_table(schedule_table))
+
+def read_schedule_table(db_session):
+    schedule_to_append = crud.read.get_all_records_from_table(
         db_session, model.Schedule)
+
+
+    for i in schedule_table.get_children():
+        schedule_table.delete(i)
 
     schedule_list = list()
     for s in schedule_to_append:
@@ -49,3 +61,4 @@ def create_schedule_frame(db_session: orm.Session, notebook: ttk.Notebook):
                              s.start_of_shift, s.end_of_shift if s.end_of_shift != None else "", s.courier_id))
     for s in schedule_list:
         schedule_table.insert("", tk.END, values=s)
+
