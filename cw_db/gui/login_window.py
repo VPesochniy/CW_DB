@@ -4,11 +4,12 @@ import controller
 import sqlalchemy.orm as orm
 
 
-def run_app(db_session: orm.Session):
+def _send_user_data(db_session: orm.Session, input_login: tk.StringVar, input_password: tk.StringVar):
+    controller.verify_user(
+        db_session, input_login.get(), input_password.get())
 
-    def send_user_data():
-        controller.verify_user(
-            db_session, input_login.get(), input_password.get())
+
+def run_app(db_session: orm.Session):
 
     global root
     root = tk.Tk()
@@ -27,7 +28,7 @@ def run_app(db_session: orm.Session):
     password_entry = ttk.Entry(
         master=frame, textvariable=input_password, show="*")
     confirm_button = ttk.Button(
-        master=frame, text="LOGIN", command=send_user_data)
+        master=frame, text="LOGIN", command=lambda: _send_user_data(db_session, input_login, input_password))
 
     username_label.pack(anchor=tk.W, expand=True, padx=5)
     login_entry.pack(anchor=tk.CENTER, expand=True, fill=tk.X, ipady=4, pady=4)
