@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 import controller
 import sqlalchemy.orm as orm
 import model
@@ -11,6 +12,23 @@ import gui.order_frame
 import gui.schedule_frame
 import gui.user_frame
 
+def _get_opened_note(db_session: orm.Session, notebook: ttk.Notebook):
+    match notebook.index(notebook.select()):
+        case 0:
+            controller.export_table_in_csv(db_session, model.Address)
+        case 1:
+            controller.export_table_in_csv(db_session, model.Courier)
+        case 2:
+            controller.export_table_in_csv(db_session, model.Customer)
+        case 3:
+            controller.export_table_in_csv(db_session, model.Item)
+        case 4:
+            controller.export_table_in_csv(db_session, model.Order)
+        case 5:
+            controller.export_table_in_csv(db_session, model.Schedule)
+        case 6:
+            controller.export_table_in_csv(db_session, model.User)
+
 
 def run_app(db_session: orm.Session):
     global root
@@ -19,19 +37,16 @@ def run_app(db_session: orm.Session):
     root.geometry("1200x800")
     root.resizable(False, False)
 
-    root.columnconfigure(index=0, weight=1)
-    root.rowconfigure(index=0, weight=1)
-
     notebook_frame = ttk.Frame(master=root)
     bottom_frame = ttk.Frame(master=root)
 
-    notebook_frame.grid(row=0, column=0, sticky=tk.NSEW)
-    bottom_frame.grid(row=1, column=0, sticky=tk.EW)
+    notebook_frame.pack(expand=True, fill=tk.BOTH)
+    bottom_frame.pack(fill=tk.X)
 
     create_button = ttk.Button(master=bottom_frame, text="СОЗДАТЬ")
     delete_button = ttk.Button(master=bottom_frame, text="УДАЛИТЬ")
-    update_button = ttk.Button(master=bottom_frame, text="ОБНОВИТЬ")
-    export_button = ttk.Button(master=bottom_frame, text="ВЫГРУЗИТЬ ТАБЛИЦУ")
+    update_button = ttk.Button(master=bottom_frame, text="ИЗМЕНИТЬ")
+    export_button = ttk.Button(master=bottom_frame, text="ВЫГРУЗИТЬ ТАБЛИЦУ", command=lambda: _get_opened_note(db_session, notebook))
 
     create_button.pack(side=tk.LEFT, padx=4, ipadx=4)
     delete_button.pack(side=tk.LEFT, padx=4, ipadx=4)

@@ -40,6 +40,6 @@ def create_item_frame(db_session: orm.Session, notebook: ttk.Notebook):
 
     item_list = list()
     for i in item_to_append:
-        item_list.append((i.id, i.name, i.price, i.quantity, i.description))
+        item_list.append((i.id, i.name, i.price, i.quantity, i.description if i.description != None else ""))
     for i in item_list:
         item_table.insert("", tk.END, values=i)

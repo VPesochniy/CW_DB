@@ -13,6 +13,8 @@ import crud.read
 import crud.update
 import crud.delete
 
+import csv
+from tkinter import filedialog
 
 def connect_to_db():
     db_engine = db.create_engine(
@@ -82,7 +84,7 @@ def get_object_from_table(db_session: orm.Session, choice: model.Base) -> typing
 
 
 def verify_user(db_session: orm.Session, input_login: str, input_password: str):
-    user = get_user_from_db(db_session, input_login)
+    user = _get_user_from_db(db_session, input_login)
     password_to_verify = hashlib.sha256(input_password.encode("UTF-8"))
     if password_to_verify.hexdigest() == user.password:
         match user.access_level:
@@ -98,5 +100,28 @@ def verify_user(db_session: orm.Session, input_login: str, input_password: str):
                 print("VIEWER ACCESS")
 
 
-def get_user_from_db(db_session: orm.Session, input_login: str) -> model.Base:
+def _get_user_from_db(db_session: orm.Session, input_login: str) -> model.Base:
     return db_session.query(model.User).filter(model.User.login == input_login).first()
+
+
+def export_table_in_csv(db_session: orm.Session, choice: model.Base):
+        file_path = _open_file_explorer()
+        print(file_path)
+        # found_name = _find_name_in_choice(choice)
+        file_to_write = open(f"{file_path}.csv", "w")
+        csv_writer = csv.writer(file_to_write)
+        records = db_session.query(choice).all()
+        for row in records:
+            csv_writer.writerow([getattr(row, column.name) for column in choice.__mapper__.columns])
+
+
+def _find_name_in_choice(choice: model.Base) -> str:
+    dot_in_string_name = str(choice).find(".")
+    quote_in_string_name = str(choice).find("'", dot_in_string_name)
+    grep_name = str(choice)[dot_in_string_name+1:quote_in_string_name]
+    return grep_name
+
+
+def _open_file_explorer() -> str:
+    return filedialog.asksaveasfilename()
+    

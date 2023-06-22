@@ -45,7 +45,7 @@ def create_schedule_frame(db_session: orm.Session, notebook: ttk.Notebook):
 
     schedule_list = list()
     for s in schedule_to_append:
-        schedule_list.append((s.id, s.date, s.description,
-                             s.start_of_shift, s.end_of_shift, s.courier_id))
+        schedule_list.append((s.id, s.date, s.description if s.description != None else "",
+                             s.start_of_shift, s.end_of_shift if s.end_of_shift != None else "", s.courier_id))
     for s in schedule_list:
         schedule_table.insert("", tk.END, values=s)

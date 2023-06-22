@@ -52,7 +52,7 @@ def create_order_frame(db_session: orm.Session, notebook: ttk.Notebook):
 
     order_list = list()
     for o in order_to_append:
-        order_list.append((o.id, o.items_quantity, o.discount, o.cost, o.status,
-                          o.date_of_creation, o.date_of_completion, o.courier_id, o.customer_id))
+        order_list.append((o.id, o.items_quantity, o.discount if o.discount != None else "", o.cost, o.status,
+                          o.date_of_creation, o.date_of_completion if o.date_of_completion != None else "", o.courier_id, o.customer_id))
     for o in order_list:
         order_table.insert("", tk.END, values=o)
