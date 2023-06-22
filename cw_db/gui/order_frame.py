@@ -4,6 +4,8 @@ import model
 import sqlalchemy.orm as orm
 import controller
 
+import crud.read
+
 
 def create_order_frame(db_session: orm.Session, notebook: ttk.Notebook):
     order_frame = ttk.Frame(master=notebook)
@@ -15,6 +17,7 @@ def create_order_frame(db_session: orm.Session, notebook: ttk.Notebook):
     order_columns = ("id", "items_quantity", "discount", "cost", "status",
                      "date_of_creation", "date_of_completion", "courier_id", "customer_id")
 
+    global order_table
     order_table = ttk.Treeview(
         columns=order_columns, show="headings", master=order_frame)
 
@@ -48,7 +51,16 @@ def create_order_frame(db_session: orm.Session, notebook: ttk.Notebook):
     order_table_scrollbar.grid(row=0, column=1, sticky=tk.NS)
     order_table.configure(yscrollcommand=order_table_scrollbar.set)
 
-    order_to_append = controller.get_object_from_table(db_session, model.Order)
+    read_order_table(db_session)
+
+    order_table.bind("<<TreeviewSelect>>", lambda event: controller.get_selected_object_from_table(order_table))
+
+def read_order_table(db_session):
+    order_to_append = crud.read.get_all_records_from_table(db_session, model.Order)
+
+
+    for i in order_table.get_children():
+        order_table.delete(i)
 
     order_list = list()
     for o in order_to_append:
@@ -56,3 +68,4 @@ def create_order_frame(db_session: orm.Session, notebook: ttk.Notebook):
                           o.date_of_creation, o.date_of_completion if o.date_of_completion != None else "", o.courier_id, o.customer_id))
     for o in order_list:
         order_table.insert("", tk.END, values=o)
+

@@ -4,6 +4,9 @@ import model
 import sqlalchemy.orm as orm
 import controller
 
+import crud.read
+
+
 
 def create_customer_frame(db_session: orm.Session, notebook: ttk.Notebook):
     customer_frame = ttk.Frame(master=notebook)
@@ -14,6 +17,7 @@ def create_customer_frame(db_session: orm.Session, notebook: ttk.Notebook):
 
     customer_columns = ("id", "full_name", "phone_number")
 
+    global customer_table
     customer_table = ttk.Treeview(
         columns=customer_columns, show="headings", master=customer_frame)
 
@@ -32,8 +36,16 @@ def create_customer_frame(db_session: orm.Session, notebook: ttk.Notebook):
     customer_table_scrollbar.grid(row=0, column=1, sticky=tk.NS)
     customer_table.configure(yscrollcommand=customer_table_scrollbar.set)
 
-    customer_to_append = controller.get_object_from_table(
+    read_customer_table(db_session)
+
+    customer_table.bind("<<TreeviewSelect>>", lambda event: controller.get_selected_object_from_table(customer_table))
+
+def read_customer_table(db_session):
+    customer_to_append = crud.read.get_all_records_from_table(
         db_session, model.Customer)
+
+    for i in customer_table.get_children():
+        customer_table.delete(i)
 
     customer_list = list()
     for c in customer_to_append:

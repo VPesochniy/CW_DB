@@ -4,6 +4,8 @@ import model
 import sqlalchemy.orm as orm
 import controller
 
+import crud.read
+
 
 def create_courier_frame(db_session: orm.Session, notebook: ttk.Notebook):
     courier_frame = ttk.Frame(master=notebook)
@@ -14,6 +16,7 @@ def create_courier_frame(db_session: orm.Session, notebook: ttk.Notebook):
 
     courier_columns = ("id", "login", "password", "full_name", "status")
 
+    global courier_table
     courier_table = ttk.Treeview(
         columns=courier_columns, show="headings", master=courier_frame)
 
@@ -36,11 +39,20 @@ def create_courier_frame(db_session: orm.Session, notebook: ttk.Notebook):
     courier_table_scrollbar.grid(row=0, column=1, sticky=tk.NS)
     courier_table.configure(yscrollcommand=courier_table_scrollbar.set)
 
-    courier_to_append = controller.get_object_from_table(
+    read_courier_table(db_session)
+
+    courier_table.bind("<<TreeviewSelect>>", lambda event: controller.get_selected_object_from_table(courier_table))
+
+def read_courier_table(db_session):
+    courier_to_append = crud.read.get_all_records_from_table(
         db_session, model.Courier)
+
+    for i in courier_table.get_children():
+        courier_table.delete(i)
 
     courier_list = list()
     for c in courier_to_append:
         courier_list.append((c.id, c.login, c.password, c.full_name, c.status))
     for c in courier_list:
         courier_table.insert("", tk.END, values=c)
+
