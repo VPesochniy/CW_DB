@@ -1,5 +1,6 @@
 cw_db/__pycache__
 cw_db/gui/__pycache__
+cw_db/gui/dialogs/__pycache__
 cw_db/crud/__pycache__
 .venv
 .vscode
