@@ -22,6 +22,7 @@ def run_app(db_session: orm.Session):
 
     input_login = tk.StringVar()
     input_password = tk.StringVar()
+
     username_label = ttk.Label(master=frame, text="USERNAME")
     login_entry = ttk.Entry(master=frame, textvariable=input_login)
     password_label = ttk.Label(master=frame, text="PASSWORD")

@@ -15,7 +15,6 @@ import crud.delete
 
 import csv
 from tkinter import filedialog, ttk
-import tkinter.messagebox as msg
 
 
 def connect_to_db():
@@ -137,3 +136,4 @@ def get_selected_object_from_table(table: ttk.Treeview) -> int:
         object_to_read = table.item(selected_object)
         table_id, *_ = object_to_read["values"]
     return table_id
+

@@ -16,6 +16,8 @@ import gui.user_frame
 import crud.delete
 import crud.read
 
+import gui.dialogs.dialog as dialog
+
 
 def _get_opened_note_to_export(db_session: orm.Session, notebook: ttk.Notebook):
     match notebook.index(notebook.select()):
@@ -38,19 +40,19 @@ def _get_opened_note_to_export(db_session: orm.Session, notebook: ttk.Notebook):
 def _get_opened_note_to_create(db_session: orm.Session, notebook: ttk.Notebook):
     match notebook.index(notebook.select()):
         case 0:
-            controller.export_table_in_csv(db_session, model.Address)
+            dialog.create_dialog(db_session, model.Address)
         case 1:
-            controller.export_table_in_csv(db_session, model.Courier)
+            dialog.create_dialog(db_session, model.Courier)
         case 2:
-            controller.export_table_in_csv(db_session, model.Customer)
+            dialog.create_dialog(db_session, model.Customer)
         case 3:
-            controller.export_table_in_csv(db_session, model.Item)
+            dialog.create_dialog(db_session, model.Item)
         case 4:
-            controller.export_table_in_csv(db_session, model.Order)
+            dialog.create_dialog(db_session, model.Order)
         case 5:
-            controller.export_table_in_csv(db_session, model.Schedule)
+            dialog.create_dialog(db_session, model.Schedule)
         case 6:
-            controller.export_table_in_csv(db_session, model.User)
+            dialog.create_dialog(db_session, model.User)
 
 
 def _get_opened_note_to_update(db_session: orm.Session, notebook: ttk.Notebook):
